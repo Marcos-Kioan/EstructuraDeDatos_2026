@@ -1,105 +1,58 @@
 ﻿using System;
 
-// DIFERENCIADOR: Estructura para encapsular los datos del polígono
-struct Poligono
-{
-    public int Lados;
-    public double MedidaLado;
-    public double Apotema;
-    public string Nombre;
-}
-
 class Program
 {
-
     static void Main(string[] args)
     {
-        Console.WriteLine("=== CALCULADORA DE ÁREA DE POLÍGONOS REGULARES ===");
+        Console.WriteLine("EL DEMONIO DE LA MEMORIA: VALOR VS REFERENCIA ");
 
-        // Paso 1: Seleccionar tipo de polígono
-        Poligono figura = new Poligono();
-        figura.Lados = SeleccionarPoligono(out string nombrePoligono);
-        figura.Nombre = nombrePoligono;
+        // --------------------------
+        // PRUEBA 1: TIPO DE VALOR (int)
+        // --------------------------
+        int numeroOriginal = 50; // Valor inicial
+        Console.WriteLine($"1. TIPO DE VALOR (int)");
+        Console.WriteLine($"Antes de llamar a la función: {numeroOriginal}");
 
-        // Paso 2: Pedir datos al usuario (con validaciones)
-        figura = PedirDatos(figura);
+        // Llamamos a la función e intentamos cambiarlo
+        CambiarValor(numeroOriginal);
 
-        // Paso 3: Calcular área
-        double area = CalcularArea(figura);
+        Console.WriteLine($"Después de llamar a la función: {numeroOriginal}");
+        Console.WriteLine(" NO CAMBIÓ: porque se pasó una COPIA del valor.");
 
-        // Paso 4: Mostrar resultado final
-        Console.WriteLine($"Resultado: El área del {figura.Nombre} es: {area:F2} unidades cuadradas");
-    }
 
-    // 🔹 Función 1: Muestra menú y devuelve número de lados
-    static int SeleccionarPoligono(out string nombre)
-    {
-        int opcion;
-        nombre = "";
+        // --------------------------
+        // PRUEBA 2: TIPO DE REFERENCIA (Arreglo)
+        // --------------------------
+        int[] arregloOriginal = { 10, 20, 30 }; // Valor inicial
+        Console.WriteLine($"2. TIPO DE REFERENCIA (Arreglo)");
+        Console.WriteLine($"Antes de llamar a la función: [{string.Join(", ", arregloOriginal)}]");
 
-        do
-        {
-            Console.WriteLine("\n--- MENÚ DE POLÍGONOS ---");
-            Console.WriteLine("1. Pentágono (5 lados)");
-            Console.WriteLine("2. Hexágono (6 lados)");
-            Console.WriteLine("3. Heptágono (7 lados)");
-            Console.WriteLine("4. Octágono (8 lados)");
-            Console.Write("Elige una opción (1-4): ");
+        // Llamamos a la función e intentamos cambiarlo
+        CambiarReferencia(arregloOriginal);
 
-            // Validación de entrada
-            if (int.TryParse(Console.ReadLine(), out opcion) && opcion >= 1 && opcion <= 4)
-            {
-                break;
-            }
-            Console.WriteLine(" Opción inválida. Intenta nuevamente.");
-        } while (true);
+        Console.WriteLine($"Después de llamar a la función: [{string.Join(", ", arregloOriginal)}]");
+        Console.WriteLine("SÍ CAMBIÓ: porque se pasó la DIRECCIÓN en memoria.");
 
-        // Asignar lados y nombre
-        switch (opcion)
-        {
-            case 1: nombre = "Pentágono"; return 5;
-            case 2: nombre = "Hexágono"; return 6;
-            case 3: nombre = "Heptágono"; return 7;
-            case 4: nombre = "Octágono"; return 8;
-            default: nombre = "Desconocido"; return 0;
-        }
-    }
 
-    // 🔹 Función 2: Solicita datos con validación de números positivos
-    static Poligono PedirDatos(Poligono poligono)
-    {
-        // Validar medida del lado
-        poligono.MedidaLado = PedirNumeroPositivo($"\nIngresa la medida del lado del {poligono.Nombre}: ");
         
-        // Validar apotema
-        poligono.Apotema = PedirNumeroPositivo($"Ingresa la medida de la apotema del {poligono.Nombre}: ");
-
-        return poligono;
+        Console.WriteLine("EXPLICACIÓN TÉCNICA:");
+        Console.WriteLine("- int: Se guarda en el STACK (memoria rápida). Se copia el dato.");
+        Console.WriteLine("- int[]: Los datos están en el HEAP (memoria grande). En el Stack solo vive la dirección.");
     }
 
-    // 🔹 Función auxiliar: Valida que sea un número decimal positivo
-    static double PedirNumeroPositivo(string mensaje)
+
+    // 🔹 Función 1: Recibe un TIPO DE VALOR
+    static void CambiarValor(int x)
     {
-        double valor;
-        do
-        {
-            Console.Write(mensaje);
-            // Usamos TryParse tal como sugiere la guía de IA
-            if (double.TryParse(Console.ReadLine(), out valor) && valor > 0)
-            {
-                break;
-            }
-            Console.WriteLine("Error: Debes ingresar un número mayor a 0. Intenta otra vez.");
-        } while (true);
-
-        return valor;
+        // Aquí solo cambiamos la COPIA que llegó, NO el original
+        x = 100;
     }
 
-    // 🔹 Función 3: Calcula el área
-    static double CalcularArea(Poligono poligono)
+
+    // 🔹 Función 2: Recibe un TIPO DE REFERENCIA
+    static void CambiarReferencia(int[] arr)
     {
-        // Fórmula: Área = (Perímetro × Apotema) / 2
-        double perimetro = poligono.Lados * poligono.MedidaLado;
-        return (perimetro * poligono.Apotema) / 2;
+        // Aquí modificamos el dato que está en la dirección original
+        arr[0] = 100;
     }
-}    
+}

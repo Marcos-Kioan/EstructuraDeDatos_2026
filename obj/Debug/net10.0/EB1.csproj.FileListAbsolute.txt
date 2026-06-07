@@ -12,3 +12,4 @@ C:\Users\marco\OneDrive\Documentos\ProyectosUnitec\EB1\obj\Debug\net10.0\refint\
 C:\Users\marco\OneDrive\Documentos\ProyectosUnitec\EB1\obj\Debug\net10.0\EB1.pdb
 C:\Users\marco\OneDrive\Documentos\ProyectosUnitec\EB1\obj\Debug\net10.0\EB1.genruntimeconfig.cache
 C:\Users\marco\OneDrive\Documentos\ProyectosUnitec\EB1\obj\Debug\net10.0\ref\EB1.dll
+C:\Users\marco\OneDrive\Documentos\ProyectosUnitec\EB1\obj\Debug\net10.0\EB1.sourcelink.json
