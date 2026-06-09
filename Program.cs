@@ -1,56 +1,71 @@
 ﻿using System;
 
+// ==============================================
+// CLASE NODO: Es la unidad básica del árbol
+// ==============================================
+// Cada nodo tiene un ID, un dato y dos hijos (izquierdo y derecho)
+// El signo ? significa que pueden ser nulos (no tener hijos)
+public class Nodo
+{
+    public int ID { get; set; }
+    public string Dato { get; set; } = string.Empty;
+    public Nodo? HijoIzquierdo { get; set; }
+    public Nodo? HijoDerecho { get; set; }
+
+    // Constructor para crear nodos rápido
+    public Nodo(int id, string dato)
+    {
+        ID = id;
+        Dato = dato;
+        HijoIzquierdo = null;
+        HijoDerecho = null;
+    }
+}
+
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== ALGORITMOS RECURSIVOS =====\n");
+        Console.WriteLine("===== ARBOL BINARIO DE BUSQUEDA =====");
 
         // --------------------------
-        // PRUEBA DEL FACTORIAL
+        // PASO 1: CREAR EL ARBOL
         // --------------------------
-        Console.Write("Escribe un número para calcular su factorial: ");
-        string dato1 = Console.ReadLine();
+        // Empezamos con la raíz
+        Nodo? raiz = null;
 
-        if (int.TryParse(dato1, out int numeroFactorial))
+        // Insertamos varios nodos
+        raiz = InsertarNodo(raiz, new Nodo(10, "Archivo 10"));
+        raiz = InsertarNodo(raiz, new Nodo(5, "Archivo 5"));
+        raiz = InsertarNodo(raiz, new Nodo(15, "Archivo 15"));
+        raiz = InsertarNodo(raiz, new Nodo(3, "Archivo 3"));
+        raiz = InsertarNodo(raiz, new Nodo(7, "Archivo 7"));
+        raiz = InsertarNodo(raiz, new Nodo(12, "Archivo 12"));
+        raiz = InsertarNodo(raiz, new Nodo(20, "Archivo 20"));
+
+        Console.WriteLine("Nodos insertados correctamente");
+
+
+        // --------------------------
+        // PASO 2: PRUEBA DE BUSQUEDA
+        // --------------------------
+        Console.Write("\nEscribe el ID que quieres buscar: ");
+        if (int.TryParse(Console.ReadLine(), out int idBuscado))
         {
-            try
-            {
-                long resultadoFact = CalcularFactorial(numeroFactorial);
-                Console.WriteLine($"{numeroFactorial}! = {resultadoFact}");
-            }
-            catch (ArgumentException error)
-            {
-                Console.WriteLine($"Error: {error.Message}");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Error: Debes escribir un número entero válido.");
-        }
+            string? resultado = BuscarNodo(raiz, idBuscado);
 
-
-        // --------------------------
-        // PRUEBA DE FIBONACCI
-        // --------------------------
-        Console.Write("\nEscribe la posición para ver la serie Fibonacci: ");
-        string dato2 = Console.ReadLine();
-
-        if (int.TryParse(dato2, out int numeroFib))
-        {
-            try
+            if (resultado != null)
             {
-                long resultadoFib = GenerarFibonacci(numeroFib);
-                Console.WriteLine($"Fibonacci en la posición {numeroFib} es: {resultadoFib}");
+                Console.WriteLine($"Encontrado: {resultado}");
             }
-            catch (ArgumentException error)
+            else
             {
-                Console.WriteLine($"Error: {error.Message}");
+                Console.WriteLine("Ese ID NO existe en el árbol");
             }
         }
         else
         {
-            Console.WriteLine("Error: Debes escribir un número entero válido.");
+            Console.WriteLine("Escribe un número válido");
         }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
@@ -59,45 +74,62 @@ class Program
 
 
     // ==============================================
-    // FUNCIÓN 1: FACTORIAL RECURSIVO
+    // FUNCIÓN 1: INSERTAR NODO (RECURSIVA)
     // ==============================================
-    // Calcula n! = 1 * 2 * 3 * ... * n
-    static long CalcularFactorial(int n)
+    // Regla: Menores a la izquierda, mayores a la derecha
+    static Nodo InsertarNodo(Nodo? raiz, Nodo nuevoNodo)
     {
-        // Primero validamos que no sea negativo
-        if (n < 0)
+        // 📌 CASO BASE: Si el espacio está vacío, ponemos el nodo aquí
+        if (raiz == null)
         {
-            throw new ArgumentException("No se puede calcular el factorial de un número negativo.");
+            return nuevoNodo;
         }
 
-        //  CASO BASE: Si es 0 o 1, el resultado siempre es 1
-        if (n == 0 || n == 1)
+        //  CASO RECURSIVO: Decidir dónde ir
+        if (nuevoNodo.ID < raiz.ID)
         {
-            return 1;
+            // Si es menor -> Izquierda
+            raiz.HijoIzquierdo = InsertarNodo(raiz.HijoIzquierdo, nuevoNodo);
+        }
+        else if (nuevoNodo.ID > raiz.ID)
+        {
+            // Si es mayor -> Derecha
+            raiz.HijoDerecho = InsertarNodo(raiz.HijoDerecho, nuevoNodo);
         }
 
-        //  CASO RECURSIVO: n * factorial(n-1)
-        return n * CalcularFactorial(n - 1);
+        // Si es igual, no hacemos nada (no permitimos duplicados)
+        return raiz;
     }
 
 
     // ==============================================
-    // FUNCIÓN 2: FIBONACCI RECURSIVO
+    // FUNCIÓN 2: BUSCAR NODO (RECURSIVA)
     // ==============================================
-    // Secuencia: 0, 1, 1, 2, 3, 5, 8...
-    static long GenerarFibonacci(int n)
+    // Demuestra la eficiencia O(log n)
+    static string? BuscarNodo(Nodo? raiz, int idObjetivo)
     {
-        // Validación de entrada
-        if (n < 0)
+        //  CASO BASE 1: Llegamos al final y no está
+        if (raiz == null)
         {
-            throw new ArgumentException("La posición debe ser un número mayor o igual a 0.");
+            return null;
         }
 
-        //  CASOS BASE (tiene dos)
-        if (n == 0) return 0; // Primer valor
-        if (n == 1) return 1; // Segundo valor
+        //  CASO BASE 2: ¡Lo encontramos!
+        if (idObjetivo == raiz.ID)
+        {
+            return raiz.Dato;
+        }
 
-        // 🔄 CASO RECURSIVO: Suma de los dos anteriores
-        return GenerarFibonacci(n - 1) + GenerarFibonacci(n - 2);
+        //  CASO RECURSIVO: Buscar en la rama correcta
+        if (idObjetivo < raiz.ID)
+        {
+            // Es menor -> Busca solo a la IZQUIERDA (descartamos todo el derecho)
+            return BuscarNodo(raiz.HijoIzquierdo, idObjetivo);
+        }
+        else
+        {
+            // Es mayor -> Busca solo a la DERECHA (descartamos todo el izquierdo)
+            return BuscarNodo(raiz.HijoDerecho, idObjetivo);
+        }
     }
 }
