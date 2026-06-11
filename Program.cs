@@ -1,135 +1,104 @@
 ﻿using System;
 
-// ==============================================
-// CLASE NODO: Es la unidad básica del árbol
-// ==============================================
-// Cada nodo tiene un ID, un dato y dos hijos (izquierdo y derecho)
-// El signo ? significa que pueden ser nulos (no tener hijos)
-public class Nodo
-{
-    public int ID { get; set; }
-    public string Dato { get; set; } = string.Empty;
-    public Nodo? HijoIzquierdo { get; set; }
-    public Nodo? HijoDerecho { get; set; }
-
-    // Constructor para crear nodos rápido
-    public Nodo(int id, string dato)
-    {
-        ID = id;
-        Dato = dato;
-        HijoIzquierdo = null;
-        HijoDerecho = null;
-    }
-}
-
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== ARBOL BINARIO DE BUSQUEDA =====");
+        Console.WriteLine("===== MANEJO DE MEMORIA: REF, OUT Y REFERENCIAS =====\n");
 
-        // --------------------------
-        // PASO 1: CREAR EL ARBOL
-        // --------------------------
-        // Empezamos con la raíz
-        Nodo? raiz = null;
+        // ==============================================
+        // MÓDULO 1: USO DE ref - INTERCAMBIAR VALORES
+        // ==============================================
+        Console.WriteLine("--- MÓDULO 1: Intercambio con ref ---");
+        int num1 = 10;
+        int num2 = 25;
 
-        // Insertamos varios nodos
-        raiz = InsertarNodo(raiz, new Nodo(10, "Archivo 10"));
-        raiz = InsertarNodo(raiz, new Nodo(5, "Archivo 5"));
-        raiz = InsertarNodo(raiz, new Nodo(15, "Archivo 15"));
-        raiz = InsertarNodo(raiz, new Nodo(3, "Archivo 3"));
-        raiz = InsertarNodo(raiz, new Nodo(7, "Archivo 7"));
-        raiz = InsertarNodo(raiz, new Nodo(12, "Archivo 12"));
-        raiz = InsertarNodo(raiz, new Nodo(20, "Archivo 20"));
-
-        Console.WriteLine("Nodos insertados correctamente");
+        Console.WriteLine($"Antes de intercambiar: num1 = {num1}, num2 = {num2}");
+        
+        // Usamos la palabra 'ref' al llamar al método
+        Intercambiar(ref num1, ref num2);
+        
+        Console.WriteLine($"Después de intercambiar: num1 = {num1}, num2 = {num2}");
+        Console.WriteLine("→ Cambiaron los valores originales porque pasamos la referencia.\n");
 
 
-        // --------------------------
-        // PASO 2: PRUEBA DE BUSQUEDA
-        // --------------------------
-        Console.Write("\nEscribe el ID que quieres buscar: ");
-        if (int.TryParse(Console.ReadLine(), out int idBuscado))
-        {
-            string? resultado = BuscarNodo(raiz, idBuscado);
+        // ==============================================
+        // MÓDULO 2: USO DE out - DEVOLVER VARIOS DATOS
+        // ==============================================
+        Console.WriteLine("--- MÓDULO 2: Cálculo con out ---");
+        int dividendo = 17;
+        int divisor = 5;
 
-            if (resultado != null)
-            {
-                Console.WriteLine($"Encontrado: {resultado}");
-            }
-            else
-            {
-                Console.WriteLine("Ese ID NO existe en el árbol");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Escribe un número válido");
-        }
+        // 'out' nos permite obtener un segundo valor (el residuo)
+        int cociente = CalcularYValidar(dividendo, divisor, out int residuo);
 
-        Console.WriteLine("\nPresiona cualquier tecla para salir...");
+        Console.WriteLine($"{dividendo} entre {divisor} da:");
+        Console.WriteLine($"Cociente: {cociente}");
+        Console.WriteLine($"Residuo: {residuo}");
+        Console.WriteLine("→ Usamos 'out' para sacar dos resultados de una sola función.\n");
+
+
+        // ==============================================
+        // MÓDULO 3: REFERENCIAS DE OBJETOS
+        // ==============================================
+        Console.WriteLine("--- MÓDULO 3: Referencias de Objetos ---");
+
+        // Creamos el primer alumno
+        Alumno alumno1 = new Alumno();
+        alumno1.Nombre = "Dany";
+
+        // ¡Aquí está la clave! No creamos uno nuevo, asignamos la referencia
+        Alumno alumno2 = alumno1;
+
+        Console.WriteLine($"Nombre en alumno1: {alumno1.Nombre}");
+        Console.WriteLine($"Nombre en alumno2: {alumno2.Nombre}");
+
+        // Cambiamos el nombre en la SEGUNDA variable
+        alumno2.Nombre = "3Treum";
+
+        Console.WriteLine($"\nDespués de modificar solo alumno2:");
+        Console.WriteLine($"Nombre en alumno1: {alumno1.Nombre}"); // ¡Cambió aquí también!
+        Console.WriteLine($"Nombre en alumno2: {alumno2.Nombre}");
+
+        Console.WriteLine("\n→ Explicación: No hay dos objetos, solo uno con dos etiquetas (referencias).");
+        Console.WriteLine("   Ambos apuntan al mismo lugar en la memoria HEAP.\n");
+
+        Console.WriteLine("Presiona cualquier tecla para salir...");
         Console.ReadKey();
     }
 
 
     // ==============================================
-    // FUNCIÓN 1: INSERTAR NODO (RECURSIVA)
+    // FUNCIÓN MÓDULO 1: INTERCAMBIAR con ref
     // ==============================================
-    // Regla: Menores a la izquierda, mayores a la derecha
-    static Nodo InsertarNodo(Nodo? raiz, Nodo nuevoNodo)
+    // 'ref' significa que trabaja sobre la dirección de memoria original
+    static void Intercambiar(ref int a, ref int b)
     {
-        // 📌 CASO BASE: Si el espacio está vacío, ponemos el nodo aquí
-        if (raiz == null)
-        {
-            return nuevoNodo;
-        }
-
-        //  CASO RECURSIVO: Decidir dónde ir
-        if (nuevoNodo.ID < raiz.ID)
-        {
-            // Si es menor -> Izquierda
-            raiz.HijoIzquierdo = InsertarNodo(raiz.HijoIzquierdo, nuevoNodo);
-        }
-        else if (nuevoNodo.ID > raiz.ID)
-        {
-            // Si es mayor -> Derecha
-            raiz.HijoDerecho = InsertarNodo(raiz.HijoDerecho, nuevoNodo);
-        }
-
-        // Si es igual, no hacemos nada (no permitimos duplicados)
-        return raiz;
+        int temporal = a;
+        a = b;
+        b = temporal;
     }
 
 
     // ==============================================
-    // FUNCIÓN 2: BUSCAR NODO (RECURSIVA)
+    // FUNCIÓN MÓDULO 2: CALCULAR con out
     // ==============================================
-    // Demuestra la eficiencia O(log n)
-    static string? BuscarNodo(Nodo? raiz, int idObjetivo)
+    // 'out' se usa para devolver un valor extra obligatorio
+    static int CalcularYValidar(int dividendo, int divisor, out int residuo)
     {
-        //  CASO BASE 1: Llegamos al final y no está
-        if (raiz == null)
-        {
-            return null;
-        }
+        // Debemos asignar obligatoriamente el valor a 'residuo'
+        residuo = dividendo % divisor;
+        
+        // El valor principal se devuelve normalmente
+        return dividendo / divisor;
+    }
 
-        //  CASO BASE 2: ¡Lo encontramos!
-        if (idObjetivo == raiz.ID)
-        {
-            return raiz.Dato;
-        }
 
-        //  CASO RECURSIVO: Buscar en la rama correcta
-        if (idObjetivo < raiz.ID)
-        {
-            // Es menor -> Busca solo a la IZQUIERDA (descartamos todo el derecho)
-            return BuscarNodo(raiz.HijoIzquierdo, idObjetivo);
-        }
-        else
-        {
-            // Es mayor -> Busca solo a la DERECHA (descartamos todo el izquierdo)
-            return BuscarNodo(raiz.HijoDerecho, idObjetivo);
-        }
+    // ==============================================
+    // CLASE PARA EL MÓDULO 3
+    // ==============================================
+    public class Alumno
+    {
+        public string Nombre { get; set; } = string.Empty;
     }
 }
