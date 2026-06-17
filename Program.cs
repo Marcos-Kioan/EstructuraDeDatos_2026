@@ -1,111 +1,89 @@
 ﻿using System;
-using System.Numerics; // 📚 Necesario para BigInteger
+using System.Diagnostics;
 
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== FACTORIAL: RECURSIVO VS ITERATIVO VS BIGINTEGER =====\n");
+        Console.WriteLine("===== FIBONACCI: RECURSIVIDAD VS MEMOIZATION =====\n");
 
-        // ==============================================
-        // PARTE A: PRUEBA CON TIPO INT (LÍMITE 32 BITS)
-        // ==============================================
-        Console.WriteLine("--- PARTE A: Prueba con tipo INT (límite 2,147,483,647) ---");
-        Console.WriteLine("n   | Recursivo (int)           | Iterativo (int)");
-        Console.WriteLine("-------------------------------------------------------");
+        Console.Write("Ingresa un numero (entre 35 y 43): ");
+        string entrada = Console.ReadLine();
 
-        // Probamos del 1 al 20 para ver dónde falla
-        for (int i = 1; i <= 20; i++)
+        int n;
+        bool esValido = int.TryParse(entrada, out n);
+
+        if (!esValido || n < 0)
         {
-            try
-            {
-                // Usamos bloque checked para que avise cuando se desborda
-                // Si quitamos 'checked', los valores salen negativos o erróneos sin avisar
-                checked
-                {
-                    long resultadoRec = FactorialInt(i);
-                    long resultadoIte = FactorialIterativo(i);
-
-                    Console.WriteLine($"{i,2} | {resultadoRec,25} | {resultadoIte,25}");
-                }
-            }
-            catch (OverflowException)
-            {
-                // 📌 PUNTO DE QUIEBRE DOCUMENTADO:
-                // A partir de n=13, el número es mayor a 2,147,483,647
-                Console.WriteLine($"{i,2} |        DESBORDAMIENTO     |       DESBORDAMIENTO ");
-            }
+            Console.WriteLine("ERROR: Solo numeros enteros positivos.");
+            return;
         }
 
-        Console.WriteLine(" OBSERVACIÓN: A partir de n=13 el tipo 'int' ya no sirve, el número es demasiado grande.\n");
-
-
-        // ==============================================
-        // PARTE B: SOLUCIÓN PROFESIONAL CON BIGINTEGER
-        // ==============================================
-        Console.WriteLine("--- PARTE B: Solución con BigInteger (Sin límite teórico) ---");
-
-        Console.Write("Ingresa un número para calcular su factorial: ");
-        if (int.TryParse(Console.ReadLine(), out int numero))
+        if (n > 45)
         {
-            // Convertimos el entero a BigInteger
-            BigInteger resultadoGrande = FactorialProfesional(numero);
-            
-            Console.WriteLine($" {numero}! = ");
-            Console.WriteLine(resultadoGrande);
-            Console.WriteLine($" Cantidad de dígitos: {resultadoGrande.ToString().Length}");
+            Console.WriteLine("Cuidado: El metodo simple tardara mucho tiempo.");
         }
-        else
+
+
+        // --------------------------
+        // METODO 1: RECURSIVO SIMPLE
+        // --------------------------
+        Console.WriteLine("\n--- METODO 1: RECURSIVO SIMPLE (LENTO) ---");
+        Stopwatch reloj1 = Stopwatch.StartNew();
+
+        long resultado1 = FibSimple(n);
+
+        reloj1.Stop();
+        Console.WriteLine("Resultado: " + resultado1);
+        Console.WriteLine("Tiempo: " + reloj1.ElapsedMilliseconds + " ms");
+
+
+        // --------------------------
+        // METODO 2: CON MEMOIZATION
+        // --------------------------
+        Console.WriteLine("\n--- METODO 2: OPTIMIZADO (RAPIDO) ---");
+        
+        long[] memoria = new long[n + 1];
+        for (int i = 0; i <= n; i++)
         {
-            Console.WriteLine(" Entrada inválida");
+            memoria[i] = -1;
         }
+
+        Stopwatch reloj2 = Stopwatch.StartNew();
+
+        long resultado2 = FibMemo(n, memoria);
+
+        reloj2.Stop();
+        Console.WriteLine("Resultado: " + resultado2);
+        Console.WriteLine("Tiempo: " + reloj2.ElapsedMilliseconds + " ms");
+
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
     }
 
 
-    // ==============================================
-    // FUNCIÓN 1: FACTORIAL RECURSIVO (USANDO INT)
-    // ==============================================
-    // Límite: Solo funciona bien hasta n=12
-    static int FactorialInt(int n)
+    static long FibSimple(int num)
     {
-        // Caso Base
-        if (n == 0 || n == 1)
-            return 1;
+        if (num == 0) return 0;
+        if (num == 1) return 1;
 
-        // Caso Recursivo
-        return n * FactorialInt(n - 1);
+        return FibSimple(num - 1) + FibSimple(num - 2);
     }
 
 
-    // ==============================================
-    // FUNCIÓN 2: FACTORIAL ITERATIVO (USANDO INT)
-    // ==============================================
-    // Mismo límite que el anterior, pero usa bucle en vez de pila de memoria
-    static int FactorialIterativo(int n)
+    static long FibMemo(int num, long[] memoria)
     {
-        int resultado = 1;
-        for (int i = 2; i <= n; i++)
+        if (num == 0) return 0;
+        if (num == 1) return 1;
+
+        if (memoria[num] != -1)
         {
-            resultado *= i;
+            return memoria[num];
         }
-        return resultado;
-    }
 
-
-    // ==============================================
-    // FUNCIÓN 3: FACTORIAL PROFESIONAL (BIGINTEGER)
-    // ==============================================
-    // SIN LÍMITE: Crece todo lo necesario en memoria
-    static BigInteger FactorialProfesional(BigInteger n)
-    {
-        // Caso Base: Usamos BigInteger.One en lugar de 1
-        if (n == 0 || n == 1)
-            return BigInteger.One;
-
-        // Caso Recursivo
-        return n * FactorialProfesional(n - 1);
+        memoria[num] = FibMemo(num - 1, memoria) + FibMemo(num - 2, memoria);
+        
+        return memoria[num];
     }
 }
