@@ -1,89 +1,100 @@
 ﻿using System;
-using System.Diagnostics;
+
+// Struct inmutable para almacenar coordenadas geográficas
+readonly struct CoordenadaGPS
+{
+    // Propiedades de solo lectura
+    public double Latitud { get; }
+    public double Longitud { get; }
+
+    // Constructor con validación de rangos
+    public CoordenadaGPS(double latitude, double longitude)
+    {
+        // Validación de latitud: rango válido entre -90 y 90 grados
+        if (latitude < -90 || latitude > 90)
+            throw new ArgumentOutOfRangeException(
+                nameof(latitude),
+                latitude,
+                "Latitud inválida. Debe estar entre -90 y 90 grados.");
+
+        // Validación de longitud: rango válido entre -180 y 180 grados
+        if (longitude < -180 || longitude > 180)
+            throw new ArgumentOutOfRangeException(
+                nameof(longitude),
+                longitude,
+                "Longitud inválida. Debe estar entre -180 y 180 grados.");
+
+        Latitud = latitude;
+        Longitud = longitude;
+    }
+
+    // Método para mostrar la ubicación en formato legible
+    public void ImprimirUbicacion(string nombre = "Ubicacion")
+    {
+        Console.WriteLine($"{nombre} -> Lat: {Latitud:F4} | Lon: {Longitud:F4}");
+    }
+}
 
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== FIBONACCI: RECURSIVIDAD VS MEMOIZATION =====\n");
+        Console.WriteLine("===== SISTEMA DE COORDENADAS GPS - STRUCTS =====\n");
 
-        Console.Write("Ingresa un numero (entre 35 y 43): ");
-        string entrada = Console.ReadLine();
+        // ------------------------------
+        // MODULO 1: Demostracion de copia por valor
+        // ------------------------------
+        Console.WriteLine("--- EXPERIMENTO: Copia por Valor ---");
 
-        int n;
-        bool esValido = int.TryParse(entrada, out n);
+        // Crear primera coordenada: Ciudad de Mexico
+        CoordenadaGPS c1 = new CoordenadaGPS(19.4326, -99.1332);
 
-        if (!esValido || n < 0)
+        // Copiar el contenido de c1 a c2
+        CoordenadaGPS c2 = c1;
+
+        // Asignar nuevos valores a c2
+        c2 = new CoordenadaGPS(52.5200, 13.4050); // Berlin
+
+        // Mostrar resultados: c1 no cambia
+        c1.ImprimirUbicacion("c1 (Ciudad de Mexico)");
+        c2.ImprimirUbicacion("c2 (Berlin)");
+
+        Console.WriteLine("\nConclusión: Al copiar un struct se crea una copia independiente.\n");
+
+        // ------------------------------
+        // MODULO 2: Entrada de usuario con validacion
+        // ------------------------------
+        Console.WriteLine("--- INGRESA TU PROPIA UBICACION ---");
+
+        try
         {
-            Console.WriteLine("ERROR: Solo numeros enteros positivos.");
-            return;
-        }
+            Console.Write("Ingresa Latitud: ");
+            double lat = double.Parse(Console.ReadLine()!);
 
-        if (n > 45)
+            Console.Write("Ingresa Longitud: ");
+            double lon = double.Parse(Console.ReadLine()!);
+
+            CoordenadaGPS miUbicacion = new CoordenadaGPS(lat, lon);
+            miUbicacion.ImprimirUbicacion("Tu ubicacion");
+        }
+        catch (FormatException)
         {
-            Console.WriteLine("Cuidado: El metodo simple tardara mucho tiempo.");
+            Console.WriteLine("Error: Debes ingresar solo números.");
         }
-
-
-        // --------------------------
-        // METODO 1: RECURSIVO SIMPLE
-        // --------------------------
-        Console.WriteLine("\n--- METODO 1: RECURSIVO SIMPLE (LENTO) ---");
-        Stopwatch reloj1 = Stopwatch.StartNew();
-
-        long resultado1 = FibSimple(n);
-
-        reloj1.Stop();
-        Console.WriteLine("Resultado: " + resultado1);
-        Console.WriteLine("Tiempo: " + reloj1.ElapsedMilliseconds + " ms");
-
-
-        // --------------------------
-        // METODO 2: CON MEMOIZATION
-        // --------------------------
-        Console.WriteLine("\n--- METODO 2: OPTIMIZADO (RAPIDO) ---");
-        
-        long[] memoria = new long[n + 1];
-        for (int i = 0; i <= n; i++)
+        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(latitude))
         {
-            memoria[i] = -1;
+            Console.WriteLine("Error: Latitud fuera de rango. " + ex.Message);
         }
-
-        Stopwatch reloj2 = Stopwatch.StartNew();
-
-        long resultado2 = FibMemo(n, memoria);
-
-        reloj2.Stop();
-        Console.WriteLine("Resultado: " + resultado2);
-        Console.WriteLine("Tiempo: " + reloj2.ElapsedMilliseconds + " ms");
-
+        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(longitude))
+        {
+            Console.WriteLine("Error: Longitud fuera de rango. " + ex.Message);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
-    }
-
-
-    static long FibSimple(int num)
-    {
-        if (num == 0) return 0;
-        if (num == 1) return 1;
-
-        return FibSimple(num - 1) + FibSimple(num - 2);
-    }
-
-
-    static long FibMemo(int num, long[] memoria)
-    {
-        if (num == 0) return 0;
-        if (num == 1) return 1;
-
-        if (memoria[num] != -1)
-        {
-            return memoria[num];
-        }
-
-        memoria[num] = FibMemo(num - 1, memoria) + FibMemo(num - 2, memoria);
-        
-        return memoria[num];
     }
 }
