@@ -1,100 +1,84 @@
 ﻿using System;
 
-// Struct inmutable para almacenar coordenadas geográficas
-readonly struct CoordenadaGPS
-{
-    // Propiedades de solo lectura
-    public double Latitud { get; }
-    public double Longitud { get; }
-
-    // Constructor con validación de rangos
-    public CoordenadaGPS(double latitude, double longitude)
-    {
-        // Validación de latitud: rango válido entre -90 y 90 grados
-        if (latitude < -90 || latitude > 90)
-            throw new ArgumentOutOfRangeException(
-                nameof(latitude),
-                latitude,
-                "Latitud inválida. Debe estar entre -90 y 90 grados.");
-
-        // Validación de longitud: rango válido entre -180 y 180 grados
-        if (longitude < -180 || longitude > 180)
-            throw new ArgumentOutOfRangeException(
-                nameof(longitude),
-                longitude,
-                "Longitud inválida. Debe estar entre -180 y 180 grados.");
-
-        Latitud = latitude;
-        Longitud = longitude;
-    }
-
-    // Método para mostrar la ubicación en formato legible
-    public void ImprimirUbicacion(string nombre = "Ubicacion")
-    {
-        Console.WriteLine($"{nombre} -> Lat: {Latitud:F4} | Lon: {Longitud:F4}");
-    }
-}
-
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== SISTEMA DE COORDENADAS GPS - STRUCTS =====\n");
-
-        // ------------------------------
-        // MODULO 1: Demostracion de copia por valor
-        // ------------------------------
-        Console.WriteLine("--- EXPERIMENTO: Copia por Valor ---");
-
-        // Crear primera coordenada: Ciudad de Mexico
-        CoordenadaGPS c1 = new CoordenadaGPS(19.4326, -99.1332);
-
-        // Copiar el contenido de c1 a c2
-        CoordenadaGPS c2 = c1;
-
-        // Asignar nuevos valores a c2
-        c2 = new CoordenadaGPS(52.5200, 13.4050); // Berlin
-
-        // Mostrar resultados: c1 no cambia
-        c1.ImprimirUbicacion("c1 (Ciudad de Mexico)");
-        c2.ImprimirUbicacion("c2 (Berlin)");
-
-        Console.WriteLine("\nConclusión: Al copiar un struct se crea una copia independiente.\n");
-
-        // ------------------------------
-        // MODULO 2: Entrada de usuario con validacion
-        // ------------------------------
-        Console.WriteLine("--- INGRESA TU PROPIA UBICACION ---");
-
         try
         {
-            Console.Write("Ingresa Latitud: ");
-            double lat = double.Parse(Console.ReadLine()!);
+            Console.WriteLine("===== ORDENAMIENTO POR BURBUJA - CALIFICACIONES =====\n");
 
-            Console.Write("Ingresa Longitud: ");
-            double lon = double.Parse(Console.ReadLine()!);
+            // Generar 100 calificaciones aleatorias entre 0 y 100
+            int[] calificaciones = new int[100];
+            Random rng = new Random();
+            for (int i = 0; i < calificaciones.Length; i++)
+            {
+                calificaciones[i] = rng.Next(0, 101);
+            }
 
-            CoordenadaGPS miUbicacion = new CoordenadaGPS(lat, lon);
-            miUbicacion.ImprimirUbicacion("Tu ubicacion");
+            // Mostrar estado inicial
+            Console.WriteLine("=== Estado inicial: calificaciones desordenadas ===");
+            ImprimirArreglo(calificaciones);
+
+            // Ejecutar ordenamiento y contar intercambios
+            int totalIntercambios = OrdenarPorBurbuja(calificaciones);
+
+            // Mostrar estado final
+            Console.WriteLine("\n=== Estado final: calificaciones ordenadas (menor a mayor) ===");
+            ImprimirArreglo(calificaciones);
+
+            // Mostrar estadistica
+            Console.WriteLine($"\nTotal de intercambios realizados: {totalIntercambios}");
+            Console.WriteLine("Complejidad del algoritmo: O(n²)");
         }
-        catch (FormatException)
+        catch (IndexOutOfRangeException ex)
         {
-            Console.WriteLine("Error: Debes ingresar solo números.");
+            Console.WriteLine($"\n[ERROR] Indice fuera de rango: {ex.Message}");
+            Console.WriteLine("Revisa los limites de tus ciclos for anidados.");
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(latitude))
+        catch (Exception ex)
         {
-            Console.WriteLine("Error: Latitud fuera de rango. " + ex.Message);
-        }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(longitude))
-        {
-            Console.WriteLine("Error: Longitud fuera de rango. " + ex.Message);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"\n[ERROR inesperado]: {ex.Message}");
         }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
+    }
+
+    // Algoritmo Bubble Sort optimizado con bandera y contador
+    static int OrdenarPorBurbuja(int[] arreglo)
+    {
+        int n = arreglo.Length;
+        int intercambios = 0;
+        bool huboCambio;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            huboCambio = false;
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                if (arreglo[j] > arreglo[j + 1])
+                {
+                    // Intercambio usando tupla (C# moderno)
+                    (arreglo[j], arreglo[j + 1]) = (arreglo[j + 1], arreglo[j]);
+                    intercambios++;
+                    huboCambio = true;
+                }
+            }
+            // Si no hubo cambios, ya esta ordenado: terminamos antes
+            if (!huboCambio)
+                break;
+        }
+        return intercambios;
+    }
+
+    // Funcion auxiliar para imprimir el arreglo
+    static void ImprimirArreglo(int[] arreglo)
+    {
+        foreach (int valor in arreglo)
+        {
+            Console.Write($"{valor}, ");
+        }
+        Console.WriteLine("\b\b "); // Quitar la ultima coma
     }
 }
