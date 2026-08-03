@@ -1,37 +1,21 @@
 ﻿using System;
 
-// Struct inmutable para almacenar coordenadas geográficas
-readonly struct CoordenadaGPS
+struct Transaccion
 {
-    // Propiedades de solo lectura
-    public double Latitud { get; }
-    public double Longitud { get; }
+    public int Id;
+    public double Monto;
+    public long Timestamp;
 
-    // Constructor con validación de rangos
-    public CoordenadaGPS(double latitude, double longitude)
+    public Transaccion(int id, double monto, long timestamp)
     {
-        // Validación de latitud: rango válido entre -90 y 90 grados
-        if (latitude < -90 || latitude > 90)
-            throw new ArgumentOutOfRangeException(
-                nameof(latitude),
-                latitude,
-                "Latitud inválida. Debe estar entre -90 y 90 grados.");
-
-        // Validación de longitud: rango válido entre -180 y 180 grados
-        if (longitude < -180 || longitude > 180)
-            throw new ArgumentOutOfRangeException(
-                nameof(longitude),
-                longitude,
-                "Longitud inválida. Debe estar entre -180 y 180 grados.");
-
-        Latitud = latitude;
-        Longitud = longitude;
+        Id = id;
+        Monto = monto;
+        Timestamp = timestamp;
     }
 
-    // Método para mostrar la ubicación en formato legible
-    public void ImprimirUbicacion(string nombre = "Ubicacion")
+    public override string ToString()
     {
-        Console.WriteLine($"{nombre} -> Lat: {Latitud:F4} | Lon: {Longitud:F4}");
+        return $"ID: {Id,4} | Monto: {Monto,10:F2} | Timestamp: {Timestamp}";
     }
 }
 
@@ -39,62 +23,98 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== SISTEMA DE COORDENADAS GPS - STRUCTS =====\n");
-
-        // ------------------------------
-        // MODULO 1: Demostracion de copia por valor
-        // ------------------------------
-        Console.WriteLine("--- EXPERIMENTO: Copia por Valor ---");
-
-        // Crear primera coordenada: Ciudad de Mexico
-        CoordenadaGPS c1 = new CoordenadaGPS(19.4326, -99.1332);
-
-        // Copiar el contenido de c1 a c2
-        CoordenadaGPS c2 = c1;
-
-        // Asignar nuevos valores a c2
-        c2 = new CoordenadaGPS(52.5200, 13.4050); // Berlin
-
-        // Mostrar resultados: c1 no cambia
-        c1.ImprimirUbicacion("c1 (Ciudad de Mexico)");
-        c2.ImprimirUbicacion("c2 (Berlin)");
-
-        Console.WriteLine("\nConclusión: Al copiar un struct se crea una copia independiente.\n");
-
-        // ------------------------------
-        // MODULO 2: Entrada de usuario con validacion
-        // ------------------------------
-        Console.WriteLine("--- INGRESA TU PROPIA UBICACION ---");
-
         try
         {
-            Console.Write("Ingresa Latitud: ");
-            double lat = double.Parse(Console.ReadLine()!);
+            Console.WriteLine("===== OPTIMIZADOR DE BITÁCORAS - INSERTION SORT =====\n");
 
-            Console.Write("Ingresa Longitud: ");
-            double lon = double.Parse(Console.ReadLine()!);
+            // Generar 50 transacciones: 45 ordenadas + 5 desordenadas
+            int total = 50;
+            Transaccion[] bitacora = new Transaccion[total];
+            Random rng = new Random();
 
-            CoordenadaGPS miUbicacion = new CoordenadaGPS(lat, lon);
-            miUbicacion.ImprimirUbicacion("Tu ubicacion");
+            // Primeras 45: ordenadas por ID
+            for (int i = 0; i < 45; i++)
+            {
+                bitacora[i] = new Transaccion(
+                    id: i + 1,
+                    monto: Math.Round(rng.NextDouble() * 9999.99 + 0.01, 2),
+                    timestamp: DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + i * 100
+                );
+            }
+
+            // Ultimas 5: desordenadas
+            int[] idsDesordenados = { 48, 46, 50, 47, 49 };
+            for (int i = 0; i < 5; i++)
+            {
+                bitacora[45 + i] = new Transaccion(
+                    id: idsDesordenados[i],
+                    monto: Math.Round(rng.NextDouble() * 9999.99 + 0.01, 2),
+                    timestamp: DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (45 + i) * 100
+                );
+            }
+
+            // Mostrar estado inicial
+            Console.WriteLine("=== Transacciones ANTES de ordenar ===");
+            foreach (var t in bitacora)
+                Console.WriteLine(t);
+
+            // Ejecutar ordenamiento por insercion
+            int totalDesplazamientos = OrdenarPorInsercion(bitacora);
+
+            // Mostrar resultado final
+            Console.WriteLine("\n=== Transacciones DESPUES de ordenar por ID ===");
+            foreach (var t in bitacora)
+                Console.WriteLine(t);
+
+            // Mostrar estadisticas
+            Console.WriteLine($"\nTotal de desplazamientos realizados: {totalDesplazamientos}");
+            int peorCaso = total * (total - 1) / 2;
+            double eficiencia = (1 - (double)totalDesplazamientos / peorCaso) * 100;
+            Console.WriteLine($"Eficiencia respecto al peor caso: {eficiencia:F1}%");
+            Console.WriteLine("Complejidad: Mejor caso O(n) | Peor y promedio O(n²)");
         }
-        catch (FormatException)
+        catch (OverflowException ex)
         {
-            Console.WriteLine("Error: Debes ingresar solo números.");
+            Console.WriteLine($"[ERROR] Desbordamiento: {ex.Message}");
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(latitude))
+        catch (FormatException ex)
         {
-            Console.WriteLine("Error: Latitud fuera de rango. " + ex.Message);
+            Console.WriteLine($"[ERROR] Formato invalido: {ex.Message}");
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(longitude))
+        catch (Exception ex)
         {
-            Console.WriteLine("Error: Longitud fuera de rango. " + ex.Message);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"[ERROR inesperado]: {ex.Message}");
         }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
+    }
+
+    // Algoritmo Insertion Sort con contador de desplazamientos
+    static int OrdenarPorInsercion(Transaccion[] arreglo)
+    {
+        int n = arreglo.Length;
+        int desplazamientos = 0;
+
+        // El ciclo empieza en 1 porque el elemento 0 ya esta ordenado
+        for (int i = 1; i < n; i++)
+        {
+            // Elemento actual a insertar en su lugar
+            Transaccion clave = arreglo[i];
+            int j = i - 1;
+
+            // Desplazar elementos mayores hacia la derecha
+            while (j >= 0 && arreglo[j].Id > clave.Id)
+            {
+                arreglo[j + 1] = arreglo[j];
+                desplazamientos++;
+                j--;
+            }
+
+            // Colocar la clave en la posicion correcta (j+1)
+            arreglo[j + 1] = clave;
+        }
+
+        return desplazamientos;
     }
 }
