@@ -1,6 +1,26 @@
 ﻿using System;
 
 <<<<<<< HEAD
+// Estructura inmutable de datos con validacion
+public struct RegistroDatos
+{
+    public int Id;
+    public long HashValidacion;
+    public int PesoBytes;
+
+    public RegistroDatos(int id, long hash, int pesoBytes)
+    {
+        // Validacion por contrato
+        if (pesoBytes <= 0)
+            throw new ArgumentException(
+                "PesoBytes debe ser mayor a 0. Un registro no puede tener tamaño nulo o negativo.",
+                nameof(pesoBytes));
+
+        Id = id;
+        HashValidacion = hash;
+        PesoBytes = pesoBytes;
+=======
+<<<<<<< HEAD
 struct Transaccion
 {
     public int Id;
@@ -12,11 +32,16 @@ struct Transaccion
         Id = id;
         Monto = monto;
         Timestamp = timestamp;
+>>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
     }
 
     public override string ToString()
     {
+<<<<<<< HEAD
+        return $"Id: {Id,4} | Hash: {HashValidacion,20} | Peso: {PesoBytes,5} bytes";
+=======
         return $"ID: {Id,4} | Monto: {Monto,10:F2} | Timestamp: {Timestamp}";
+>>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
     }
 }
 
@@ -28,6 +53,20 @@ class Program
     {
         try
         {
+<<<<<<< HEAD
+            Console.WriteLine("===== PROYECTO FINAL - FASE 1: SELECTION SORT =====\n");
+
+            // Generar 40 registros aleatorios
+            Random rng = new Random();
+            RegistroDatos[] lotes = new RegistroDatos[40];
+
+            for (int i = 0; i < lotes.Length; i++)
+            {
+                lotes[i] = new RegistroDatos(
+                    id: rng.Next(1, 1001),
+                    hash: rng.NextInt64(),
+                    pesoBytes: rng.Next(10, 5001)
+=======
 <<<<<<< HEAD
             Console.WriteLine("===== OPTIMIZADOR DE BITÁCORAS - INSERTION SORT =====\n");
 
@@ -54,10 +93,39 @@ class Program
                     id: idsDesordenados[i],
                     monto: Math.Round(rng.NextDouble() * 9999.99 + 0.01, 2),
                     timestamp: DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (45 + i) * 100
+>>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
                 );
             }
 
             // Mostrar estado inicial
+<<<<<<< HEAD
+            Console.WriteLine("=== ESTADO INICIAL (Desordenado) ===");
+            foreach (var registro in lotes)
+                Console.WriteLine(registro);
+
+            // Ejecutar ordenamiento y obtener metricas
+            var (comparaciones, intercambios) = OrdenarPorSeleccion(lotes);
+
+            // Mostrar resultado final
+            Console.WriteLine("\n=== ESTADO FINAL (Ordenado por ID) ===");
+            foreach (var registro in lotes)
+                Console.WriteLine(registro);
+
+            // Mostrar analisis de rendimiento
+            Console.WriteLine($"\n=== MÉTRICAS DE RENDIMIENTO ===");
+            Console.WriteLine($"Total comparaciones: {comparaciones}");
+            Console.WriteLine($"Total intercambios: {intercambios}");
+            Console.WriteLine($"Complejidad temporal: O(n²)");
+            Console.WriteLine($"Máximo teórico de intercambios: O(n)");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"[ERROR DE VALIDACIÓN] {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR INESPERADO] {ex.Message}");
+=======
             Console.WriteLine("=== Transacciones ANTES de ordenar ===");
             foreach (var t in bitacora)
                 Console.WriteLine(t);
@@ -123,12 +191,45 @@ class Program
         {
             Console.WriteLine($"\n[ERROR inesperado]: {ex.Message}");
 >>>>>>> ce317a33059c587964d2c46da8dafc58709384c0
+>>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
         }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
     }
 
+<<<<<<< HEAD
+    // Algoritmo Selection Sort instrumentado con tuplas modernas
+    static (long comparaciones, int intercambios) OrdenarPorSeleccion(RegistroDatos[] arreglo)
+    {
+        long comparaciones = 0;
+        int intercambios = 0;
+        int n = arreglo.Length;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            int indiceMinimo = i;
+
+            // Buscar el elemento menor en el resto del arreglo
+            for (int j = i + 1; j < n; j++)
+            {
+                comparaciones++;
+                if (arreglo[j].Id < arreglo[indiceMinimo].Id)
+                {
+                    indiceMinimo = j;
+                }
+            }
+
+            // Intercambiar solo si es necesario (tupla moderna C#)
+            if (indiceMinimo != i)
+            {
+                (arreglo[i], arreglo[indiceMinimo]) = (arreglo[indiceMinimo], arreglo[i]);
+                intercambios++;
+            }
+        }
+
+        return (comparaciones, intercambios);
+=======
 <<<<<<< HEAD
     // Algoritmo Insertion Sort con contador de desplazamientos
     static int OrdenarPorInsercion(Transaccion[] arreglo)
@@ -193,5 +294,6 @@ class Program
         }
         Console.WriteLine("\b\b "); // Quitar la ultima coma
 >>>>>>> ce317a33059c587964d2c46da8dafc58709384c0
+>>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
     }
 }
