@@ -1,37 +1,28 @@
 ﻿using System;
 
-// Struct inmutable para almacenar coordenadas geográficas
-readonly struct CoordenadaGPS
+// Estructura inmutable de datos con validacion
+public struct RegistroDatos
 {
-    // Propiedades de solo lectura
-    public double Latitud { get; }
-    public double Longitud { get; }
+    public int Id;
+    public long HashValidacion;
+    public int PesoBytes;
 
-    // Constructor con validación de rangos
-    public CoordenadaGPS(double latitude, double longitude)
+    public RegistroDatos(int id, long hash, int pesoBytes)
     {
-        // Validación de latitud: rango válido entre -90 y 90 grados
-        if (latitude < -90 || latitude > 90)
-            throw new ArgumentOutOfRangeException(
-                nameof(latitude),
-                latitude,
-                "Latitud inválida. Debe estar entre -90 y 90 grados.");
+        // Validacion por contrato
+        if (pesoBytes <= 0)
+            throw new ArgumentException(
+                "PesoBytes debe ser mayor a 0. Un registro no puede tener tamaño nulo o negativo.",
+                nameof(pesoBytes));
 
-        // Validación de longitud: rango válido entre -180 y 180 grados
-        if (longitude < -180 || longitude > 180)
-            throw new ArgumentOutOfRangeException(
-                nameof(longitude),
-                longitude,
-                "Longitud inválida. Debe estar entre -180 y 180 grados.");
-
-        Latitud = latitude;
-        Longitud = longitude;
+        Id = id;
+        HashValidacion = hash;
+        PesoBytes = pesoBytes;
     }
 
-    // Método para mostrar la ubicación en formato legible
-    public void ImprimirUbicacion(string nombre = "Ubicacion")
+    public override string ToString()
     {
-        Console.WriteLine($"{nombre} -> Lat: {Latitud:F4} | Lon: {Longitud:F4}");
+        return $"Id: {Id,4} | Hash: {HashValidacion,20} | Peso: {PesoBytes,5} bytes";
     }
 }
 
@@ -39,62 +30,85 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("===== SISTEMA DE COORDENADAS GPS - STRUCTS =====\n");
-
-        // ------------------------------
-        // MODULO 1: Demostracion de copia por valor
-        // ------------------------------
-        Console.WriteLine("--- EXPERIMENTO: Copia por Valor ---");
-
-        // Crear primera coordenada: Ciudad de Mexico
-        CoordenadaGPS c1 = new CoordenadaGPS(19.4326, -99.1332);
-
-        // Copiar el contenido de c1 a c2
-        CoordenadaGPS c2 = c1;
-
-        // Asignar nuevos valores a c2
-        c2 = new CoordenadaGPS(52.5200, 13.4050); // Berlin
-
-        // Mostrar resultados: c1 no cambia
-        c1.ImprimirUbicacion("c1 (Ciudad de Mexico)");
-        c2.ImprimirUbicacion("c2 (Berlin)");
-
-        Console.WriteLine("\nConclusión: Al copiar un struct se crea una copia independiente.\n");
-
-        // ------------------------------
-        // MODULO 2: Entrada de usuario con validacion
-        // ------------------------------
-        Console.WriteLine("--- INGRESA TU PROPIA UBICACION ---");
-
         try
         {
-            Console.Write("Ingresa Latitud: ");
-            double lat = double.Parse(Console.ReadLine()!);
+            Console.WriteLine("===== PROYECTO FINAL - FASE 1: SELECTION SORT =====\n");
 
-            Console.Write("Ingresa Longitud: ");
-            double lon = double.Parse(Console.ReadLine()!);
+            // Generar 40 registros aleatorios
+            Random rng = new Random();
+            RegistroDatos[] lotes = new RegistroDatos[40];
 
-            CoordenadaGPS miUbicacion = new CoordenadaGPS(lat, lon);
-            miUbicacion.ImprimirUbicacion("Tu ubicacion");
+            for (int i = 0; i < lotes.Length; i++)
+            {
+                lotes[i] = new RegistroDatos(
+                    id: rng.Next(1, 1001),
+                    hash: rng.NextInt64(),
+                    pesoBytes: rng.Next(10, 5001)
+                );
+            }
+
+            // Mostrar estado inicial
+            Console.WriteLine("=== ESTADO INICIAL (Desordenado) ===");
+            foreach (var registro in lotes)
+                Console.WriteLine(registro);
+
+            // Ejecutar ordenamiento y obtener metricas
+            var (comparaciones, intercambios) = OrdenarPorSeleccion(lotes);
+
+            // Mostrar resultado final
+            Console.WriteLine("\n=== ESTADO FINAL (Ordenado por ID) ===");
+            foreach (var registro in lotes)
+                Console.WriteLine(registro);
+
+            // Mostrar analisis de rendimiento
+            Console.WriteLine($"\n=== MÉTRICAS DE RENDIMIENTO ===");
+            Console.WriteLine($"Total comparaciones: {comparaciones}");
+            Console.WriteLine($"Total intercambios: {intercambios}");
+            Console.WriteLine($"Complejidad temporal: O(n²)");
+            Console.WriteLine($"Máximo teórico de intercambios: O(n)");
         }
-        catch (FormatException)
+        catch (ArgumentException ex)
         {
-            Console.WriteLine("Error: Debes ingresar solo números.");
+            Console.WriteLine($"[ERROR DE VALIDACIÓN] {ex.Message}");
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(latitude))
+        catch (Exception ex)
         {
-            Console.WriteLine("Error: Latitud fuera de rango. " + ex.Message);
-        }
-        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == nameof(longitude))
-        {
-            Console.WriteLine("Error: Longitud fuera de rango. " + ex.Message);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"[ERROR INESPERADO] {ex.Message}");
         }
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
+    }
+
+    // Algoritmo Selection Sort instrumentado con tuplas modernas
+    static (long comparaciones, int intercambios) OrdenarPorSeleccion(RegistroDatos[] arreglo)
+    {
+        long comparaciones = 0;
+        int intercambios = 0;
+        int n = arreglo.Length;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            int indiceMinimo = i;
+
+            // Buscar el elemento menor en el resto del arreglo
+            for (int j = i + 1; j < n; j++)
+            {
+                comparaciones++;
+                if (arreglo[j].Id < arreglo[indiceMinimo].Id)
+                {
+                    indiceMinimo = j;
+                }
+            }
+
+            // Intercambiar solo si es necesario (tupla moderna C#)
+            if (indiceMinimo != i)
+            {
+                (arreglo[i], arreglo[indiceMinimo]) = (arreglo[indiceMinimo], arreglo[i]);
+                intercambios++;
+            }
+        }
+
+        return (comparaciones, intercambios);
     }
 }
