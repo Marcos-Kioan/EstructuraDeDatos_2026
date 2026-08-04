@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 
-<<<<<<< HEAD
-// Estructura inmutable de datos con validacion
+// ESTRUCTURA REUTILIZADA DE LA FASE 1 (SIN MODIFICACIONES)
 public struct RegistroDatos
 {
     public int Id;
@@ -10,290 +10,165 @@ public struct RegistroDatos
 
     public RegistroDatos(int id, long hash, int pesoBytes)
     {
-        // Validacion por contrato
         if (pesoBytes <= 0)
             throw new ArgumentException(
-                "PesoBytes debe ser mayor a 0. Un registro no puede tener tamaño nulo o negativo.",
+                "PesoBytes debe ser mayor a 0.",
                 nameof(pesoBytes));
 
         Id = id;
         HashValidacion = hash;
         PesoBytes = pesoBytes;
-=======
-<<<<<<< HEAD
-struct Transaccion
-{
-    public int Id;
-    public double Monto;
-    public long Timestamp;
-
-    public Transaccion(int id, double monto, long timestamp)
-    {
-        Id = id;
-        Monto = monto;
-        Timestamp = timestamp;
->>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
     }
 
     public override string ToString()
     {
-<<<<<<< HEAD
-        return $"Id: {Id,4} | Hash: {HashValidacion,20} | Peso: {PesoBytes,5} bytes";
-=======
-        return $"ID: {Id,4} | Monto: {Monto,10:F2} | Timestamp: {Timestamp}";
->>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
+        return $"Id: {Id,5} | Hash: {HashValidacion,20} | Peso: {PesoBytes,5} bytes";
     }
 }
 
-=======
->>>>>>> ce317a33059c587964d2c46da8dafc58709384c0
 class Program
 {
+    // CONTADORES INSTRUMENTADOS
+    static long contadorComparaciones;
+    static int contadorIntercambiosSeleccion;
+    static int contadorLlamadasQuickSort;
+
     static void Main(string[] args)
     {
-        try
+        Console.WriteLine("===== PROYECTO FINAL - FASE 2: QUICKSORT VS SELECCIÓN =====\n");
+
+        const int TAMANO = 10_000;
+        Console.WriteLine($"Generando lote de {TAMANO:N0} registros...\n");
+
+        // GENERAR DATOS REPRODUCIBLES
+        RegistroDatos[] arregloOriginal = GenerarArregloAleatorio(TAMANO);
+        
+        // CLONAR PARA AMBOS ALGORITMOS (MISMAS CONDICIONES)
+        RegistroDatos[] copiaSeleccion = (RegistroDatos[])arregloOriginal.Clone();
+        RegistroDatos[] copiaQuickSort = (RegistroDatos[])arregloOriginal.Clone();
+
+        // ==============================================
+        // BENCHMARK 1: SELECTION SORT (FASE 1)
+        // ==============================================
+        Console.WriteLine("--- EJECUTANDO SELECCIÓN DIRECTA ---");
+        contadorComparaciones = 0;
+        contadorIntercambiosSeleccion = 0;
+        
+        Stopwatch swSeleccion = Stopwatch.StartNew();
+        OrdenarPorSeleccion(copiaSeleccion);
+        swSeleccion.Stop();
+
+        long tiempoSeleccion = swSeleccion.ElapsedMilliseconds;
+        long operacionesSeleccion = contadorComparaciones + contadorIntercambiosSeleccion;
+
+        // ==============================================
+        // BENCHMARK 2: QUICKSORT (FASE 2)
+        // ==============================================
+        Console.WriteLine("--- EJECUTANDO QUICKSORT ---");
+        contadorLlamadasQuickSort = 0;
+        
+        Stopwatch swQuick = Stopwatch.StartNew();
+        QuickSort(copiaQuickSort, 0, copiaQuickSort.Length - 1);
+        swQuick.Stop();
+
+        long tiempoQuick = swQuick.ElapsedMilliseconds;
+
+        // ==============================================
+        // REPORTE COMPARATIVO FINAL
+        // ==============================================
+        Console.WriteLine("\n" + new string('=', 70));
+        Console.WriteLine("                REPORTE COMPARATIVO DE ORDENAMIENTO");
+        Console.WriteLine(new string('=', 70));
+        Console.WriteLine($"Registros procesados: {TAMANO:N0}");
+        Console.WriteLine();
+        Console.WriteLine("ALGORITMO        | COMPARACIONES | INTERCAMBIOS | TIEMPO (ms)");
+        Console.WriteLine("-----------------|---------------|--------------|------------");
+        Console.WriteLine($"Selección       | {contadorComparaciones,13:N0} | {contadorIntercambiosSeleccion,12:N0} | {tiempoSeleccion,10}");
+        Console.WriteLine($"QuickSort       | Ver O(n log n)| Llamadas: {contadorLlamadasQuickSort,5:N0} | {tiempoQuick,10}");
+        Console.WriteLine("-----------------|---------------|--------------|------------");
+        
+        if (tiempoQuick > 0)
         {
-<<<<<<< HEAD
-            Console.WriteLine("===== PROYECTO FINAL - FASE 1: SELECTION SORT =====\n");
-
-            // Generar 40 registros aleatorios
-            Random rng = new Random();
-            RegistroDatos[] lotes = new RegistroDatos[40];
-
-            for (int i = 0; i < lotes.Length; i++)
-            {
-                lotes[i] = new RegistroDatos(
-                    id: rng.Next(1, 1001),
-                    hash: rng.NextInt64(),
-                    pesoBytes: rng.Next(10, 5001)
-=======
-<<<<<<< HEAD
-            Console.WriteLine("===== OPTIMIZADOR DE BITÁCORAS - INSERTION SORT =====\n");
-
-            // Generar 50 transacciones: 45 ordenadas + 5 desordenadas
-            int total = 50;
-            Transaccion[] bitacora = new Transaccion[total];
-            Random rng = new Random();
-
-            // Primeras 45: ordenadas por ID
-            for (int i = 0; i < 45; i++)
-            {
-                bitacora[i] = new Transaccion(
-                    id: i + 1,
-                    monto: Math.Round(rng.NextDouble() * 9999.99 + 0.01, 2),
-                    timestamp: DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + i * 100
-                );
-            }
-
-            // Ultimas 5: desordenadas
-            int[] idsDesordenados = { 48, 46, 50, 47, 49 };
-            for (int i = 0; i < 5; i++)
-            {
-                bitacora[45 + i] = new Transaccion(
-                    id: idsDesordenados[i],
-                    monto: Math.Round(rng.NextDouble() * 9999.99 + 0.01, 2),
-                    timestamp: DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (45 + i) * 100
->>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
-                );
-            }
-
-            // Mostrar estado inicial
-<<<<<<< HEAD
-            Console.WriteLine("=== ESTADO INICIAL (Desordenado) ===");
-            foreach (var registro in lotes)
-                Console.WriteLine(registro);
-
-            // Ejecutar ordenamiento y obtener metricas
-            var (comparaciones, intercambios) = OrdenarPorSeleccion(lotes);
-
-            // Mostrar resultado final
-            Console.WriteLine("\n=== ESTADO FINAL (Ordenado por ID) ===");
-            foreach (var registro in lotes)
-                Console.WriteLine(registro);
-
-            // Mostrar analisis de rendimiento
-            Console.WriteLine($"\n=== MÉTRICAS DE RENDIMIENTO ===");
-            Console.WriteLine($"Total comparaciones: {comparaciones}");
-            Console.WriteLine($"Total intercambios: {intercambios}");
-            Console.WriteLine($"Complejidad temporal: O(n²)");
-            Console.WriteLine($"Máximo teórico de intercambios: O(n)");
+            double mejora = (double)tiempoSeleccion / tiempoQuick;
+            Console.WriteLine($" QuickSort fue {mejora:F0} veces más rápido que Selección");
         }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"[ERROR DE VALIDACIÓN] {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR INESPERADO] {ex.Message}");
-=======
-            Console.WriteLine("=== Transacciones ANTES de ordenar ===");
-            foreach (var t in bitacora)
-                Console.WriteLine(t);
-
-            // Ejecutar ordenamiento por insercion
-            int totalDesplazamientos = OrdenarPorInsercion(bitacora);
-
-            // Mostrar resultado final
-            Console.WriteLine("\n=== Transacciones DESPUES de ordenar por ID ===");
-            foreach (var t in bitacora)
-                Console.WriteLine(t);
-
-            // Mostrar estadisticas
-            Console.WriteLine($"\nTotal de desplazamientos realizados: {totalDesplazamientos}");
-            int peorCaso = total * (total - 1) / 2;
-            double eficiencia = (1 - (double)totalDesplazamientos / peorCaso) * 100;
-            Console.WriteLine($"Eficiencia respecto al peor caso: {eficiencia:F1}%");
-            Console.WriteLine("Complejidad: Mejor caso O(n) | Peor y promedio O(n²)");
-        }
-        catch (OverflowException ex)
-        {
-            Console.WriteLine($"[ERROR] Desbordamiento: {ex.Message}");
-        }
-        catch (FormatException ex)
-        {
-            Console.WriteLine($"[ERROR] Formato invalido: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR inesperado]: {ex.Message}");
-=======
-            Console.WriteLine("===== ORDENAMIENTO POR BURBUJA - CALIFICACIONES =====\n");
-
-            // Generar 100 calificaciones aleatorias entre 0 y 100
-            int[] calificaciones = new int[100];
-            Random rng = new Random();
-            for (int i = 0; i < calificaciones.Length; i++)
-            {
-                calificaciones[i] = rng.Next(0, 101);
-            }
-
-            // Mostrar estado inicial
-            Console.WriteLine("=== Estado inicial: calificaciones desordenadas ===");
-            ImprimirArreglo(calificaciones);
-
-            // Ejecutar ordenamiento y contar intercambios
-            int totalIntercambios = OrdenarPorBurbuja(calificaciones);
-
-            // Mostrar estado final
-            Console.WriteLine("\n=== Estado final: calificaciones ordenadas (menor a mayor) ===");
-            ImprimirArreglo(calificaciones);
-
-            // Mostrar estadistica
-            Console.WriteLine($"\nTotal de intercambios realizados: {totalIntercambios}");
-            Console.WriteLine("Complejidad del algoritmo: O(n²)");
-        }
-        catch (IndexOutOfRangeException ex)
-        {
-            Console.WriteLine($"\n[ERROR] Indice fuera de rango: {ex.Message}");
-            Console.WriteLine("Revisa los limites de tus ciclos for anidados.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"\n[ERROR inesperado]: {ex.Message}");
->>>>>>> ce317a33059c587964d2c46da8dafc58709384c0
->>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
-        }
+        Console.WriteLine("\nComplejidad teórica: Selección O(n²) | QuickSort O(n log n) promedio");
 
         Console.WriteLine("\nPresiona cualquier tecla para salir...");
         Console.ReadKey();
     }
 
-<<<<<<< HEAD
-    // Algoritmo Selection Sort instrumentado con tuplas modernas
-    static (long comparaciones, int intercambios) OrdenarPorSeleccion(RegistroDatos[] arreglo)
-    {
-        long comparaciones = 0;
-        int intercambios = 0;
-        int n = arreglo.Length;
+    // ==============================================
+    // MÉTODOS DE ORDENAMIENTO
+    // ==============================================
 
+    // SELECTION SORT (REUTILIZADO DE FASE 1)
+    static void OrdenarPorSeleccion(RegistroDatos[] arreglo)
+    {
+        int n = arreglo.Length;
         for (int i = 0; i < n - 1; i++)
         {
-            int indiceMinimo = i;
-
-            // Buscar el elemento menor en el resto del arreglo
+            int min = i;
             for (int j = i + 1; j < n; j++)
             {
-                comparaciones++;
-                if (arreglo[j].Id < arreglo[indiceMinimo].Id)
-                {
-                    indiceMinimo = j;
-                }
+                contadorComparaciones++;
+                if (arreglo[j].Id < arreglo[min].Id)
+                    min = j;
             }
-
-            // Intercambiar solo si es necesario (tupla moderna C#)
-            if (indiceMinimo != i)
+            if (min != i)
             {
-                (arreglo[i], arreglo[indiceMinimo]) = (arreglo[indiceMinimo], arreglo[i]);
-                intercambios++;
+                (arreglo[i], arreglo[min]) = (arreglo[min], arreglo[i]);
+                contadorIntercambiosSeleccion++;
             }
         }
-
-        return (comparaciones, intercambios);
-=======
-<<<<<<< HEAD
-    // Algoritmo Insertion Sort con contador de desplazamientos
-    static int OrdenarPorInsercion(Transaccion[] arreglo)
-    {
-        int n = arreglo.Length;
-        int desplazamientos = 0;
-
-        // El ciclo empieza en 1 porque el elemento 0 ya esta ordenado
-        for (int i = 1; i < n; i++)
-        {
-            // Elemento actual a insertar en su lugar
-            Transaccion clave = arreglo[i];
-            int j = i - 1;
-
-            // Desplazar elementos mayores hacia la derecha
-            while (j >= 0 && arreglo[j].Id > clave.Id)
-            {
-                arreglo[j + 1] = arreglo[j];
-                desplazamientos++;
-                j--;
-            }
-
-            // Colocar la clave en la posicion correcta (j+1)
-            arreglo[j + 1] = clave;
-        }
-
-        return desplazamientos;
-=======
-    // Algoritmo Bubble Sort optimizado con bandera y contador
-    static int OrdenarPorBurbuja(int[] arreglo)
-    {
-        int n = arreglo.Length;
-        int intercambios = 0;
-        bool huboCambio;
-
-        for (int i = 0; i < n - 1; i++)
-        {
-            huboCambio = false;
-            for (int j = 0; j < n - i - 1; j++)
-            {
-                if (arreglo[j] > arreglo[j + 1])
-                {
-                    // Intercambio usando tupla (C# moderno)
-                    (arreglo[j], arreglo[j + 1]) = (arreglo[j + 1], arreglo[j]);
-                    intercambios++;
-                    huboCambio = true;
-                }
-            }
-            // Si no hubo cambios, ya esta ordenado: terminamos antes
-            if (!huboCambio)
-                break;
-        }
-        return intercambios;
     }
 
-    // Funcion auxiliar para imprimir el arreglo
-    static void ImprimirArreglo(int[] arreglo)
+    // QUICKSORT - CONTROL RECURSIVO
+    static void QuickSort(RegistroDatos[] arr, int bajo, int alto)
     {
-        foreach (int valor in arreglo)
+        contadorLlamadasQuickSort++; // INSTRUMENTACIÓN
+        if (bajo < alto)
         {
-            Console.Write($"{valor}, ");
+            int indicePivote = Particionar(arr, bajo, alto);
+            QuickSort(arr, bajo, indicePivote - 1);
+            QuickSort(arr, indicePivote + 1, alto);
         }
-        Console.WriteLine("\b\b "); // Quitar la ultima coma
->>>>>>> ce317a33059c587964d2c46da8dafc58709384c0
->>>>>>> 0c5ad0346207536e9cb736a676fe92d2b52232f6
+    }
+
+    // MÉTODO DE PARTICIONADO (ESQUEMA LOMUTO)
+    static int Particionar(RegistroDatos[] arr, int bajo, int alto)
+    {
+        RegistroDatos pivote = arr[alto]; // Pivote = último elemento
+        int i = bajo - 1;
+
+        for (int j = bajo; j < alto; j++)
+        {
+            if (arr[j].Id <= pivote.Id)
+            {
+                i++;
+                (arr[i], arr[j]) = (arr[j], arr[i]); // Tupla moderna
+            }
+        }
+
+        // COLOCAR PIVOTE EN SU POSICIÓN DEFINITIVA
+        (arr[i + 1], arr[alto]) = (arr[alto], arr[i + 1]);
+        return i + 1;
+    }
+
+    // GENERADOR CON SEMILLA FIJA PARA REPRODUCIBILIDAD
+    static RegistroDatos[] GenerarArregloAleatorio(int cantidad)
+    {
+        Random rnd = new Random(42); // SEMILLA FIJA = MISMO RESULTADO SIEMPRE
+        RegistroDatos[] arreglo = new RegistroDatos[cantidad];
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            arreglo[i] = new RegistroDatos(
+                id: rnd.Next(1, 100_001),
+                hash: rnd.NextInt64(),
+                pesoBytes: rnd.Next(10, 5001)
+            );
+        }
+        return arreglo;
     }
 }
