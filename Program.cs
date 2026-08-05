@@ -1,6 +1,11 @@
 ﻿using System;
 
-// ESTRUCTURA REUTILIZADA DE FASES ANTERIORES
+// ==============================================
+// ESTRUCTURA BASE (REUTILIZADA DE FASES ANTERIORES)
+// ==============================================
+/// <summary>
+/// Estructura que almacena los datos de cada registro del sistema
+/// </summary>
 public struct RegistroDatos
 {
     public int Id;
@@ -22,7 +27,9 @@ public struct RegistroDatos
     }
 }
 
-// CLASE NODO: BLOQUE BÁSICO DE LA LISTA
+/// <summary>
+/// Nodo individual para la lista simplemente enlazada
+/// </summary>
 public class NodoRegistro
 {
     public RegistroDatos Dato { get; set; }
@@ -35,7 +42,9 @@ public class NodoRegistro
     }
 }
 
-// CLASE GESTORA DE LA LISTA DINÁMICA
+/// <summary>
+/// Gestor de la lista dinámica en memoria Heap
+/// </summary>
 public class TablaDinamica
 {
     private NodoRegistro? cabeza;
@@ -49,19 +58,9 @@ public class TablaDinamica
 
     public int Cantidad => contadorRegistros;
 
-    // INSERCIÓN AL INICIO - O(1)
-    public void InsertarInicio(RegistroDatos nuevoRegistro)
-    {
-        if (nuevoRegistro.Equals(default))
-            throw new ArgumentNullException(nameof(nuevoRegistro));
-
-        NodoRegistro nuevoNodo = new NodoRegistro(nuevoRegistro);
-        nuevoNodo.Siguiente = cabeza;
-        cabeza = nuevoNodo;
-        contadorRegistros++;
-    }
-
-    // INSERCIÓN AL FINAL - O(n)
+    /// <summary>
+    /// Inserta un nuevo registro al final de la lista
+    /// </summary>
     public void InsertarFinal(RegistroDatos nuevoRegistro)
     {
         if (nuevoRegistro.Equals(default))
@@ -82,20 +81,20 @@ public class TablaDinamica
         contadorRegistros++;
     }
 
-    // ELIMINAR POR ID - O(n)
-    public void EliminarPorId(int idTarget)
+    /// <summary>
+    /// Elimina un registro por su ID
+    /// </summary>
+    public bool EliminarPorId(int idTarget)
     {
-        if (cabeza == null) return;
+        if (cabeza == null) return false;
 
-        // Caso especial: eliminar la cabeza
         if (cabeza.Dato.Id == idTarget)
         {
             cabeza = cabeza.Siguiente;
             contadorRegistros--;
-            return;
+            return true;
         }
 
-        // Caso general: recorrer buscando
         NodoRegistro anterior = cabeza;
         NodoRegistro? actual = cabeza.Siguiente;
 
@@ -105,20 +104,22 @@ public class TablaDinamica
             {
                 anterior.Siguiente = actual.Siguiente;
                 contadorRegistros--;
-                return;
+                return true;
             }
             anterior = actual;
             actual = actual.Siguiente;
         }
+        return false;
     }
 
-    // CONVERTIR A ARREGLO - PUENTE CON FASES ANTERIORES
+    /// <summary>
+    /// Convierte la lista enlazada a un arreglo estático
+    /// </summary>
     public RegistroDatos[] ObtenerComoArreglo()
     {
         RegistroDatos[] resultado = new RegistroDatos[contadorRegistros];
         NodoRegistro? actual = cabeza;
         int i = 0;
-
         while (actual != null)
         {
             resultado[i] = actual.Dato;
@@ -129,10 +130,15 @@ public class TablaDinamica
     }
 }
 
-class Program
+// ==============================================
+// ALGORITMOS DE ORDENAMIENTO (REUTILIZADOS)
+// ==============================================
+class Ordenador
 {
-    // Mantenemos QuickSort de la Fase 2 para interoperabilidad
-    static void QuickSort(RegistroDatos[] arr, int bajo, int alto)
+    /// <summary>
+    /// QuickSort recursivo - O(n log n) promedio
+    /// </summary>
+    public static void QuickSort(RegistroDatos[] arr, int bajo, int alto)
     {
         if (bajo < alto)
         {
@@ -142,7 +148,7 @@ class Program
         }
     }
 
-    static int Particionar(RegistroDatos[] arr, int bajo, int alto)
+    private static int Particionar(RegistroDatos[] arr, int bajo, int alto)
     {
         RegistroDatos valorPivote = arr[alto];
         int i = bajo - 1;
@@ -157,42 +163,216 @@ class Program
         (arr[i + 1], arr[alto]) = (arr[alto], arr[i + 1]);
         return i + 1;
     }
+}
+
+// ==============================================
+// BÚSQUEDA BINARIA INDEXADA - O(log n)
+// ==============================================
+class Buscador
+{
+    /// <summary>
+    /// Realiza búsqueda binaria sobre un arreglo YA ORDENADO
+    /// </summary>
+    /// <returns>Registro encontrado o null, y número de comparaciones</returns>
+    public static (RegistroDatos? resultado, int comparaciones) BuscarRegistroIndexado(RegistroDatos[] arregloOrdenado, int idBuscado)
+    {
+        int izquierda = 0;
+        int derecha = arregloOrdenado.Length - 1;
+        int comparaciones = 0;
+
+        while (izquierda <= derecha)
+        {
+            comparaciones++;
+            int medio = (izquierda + derecha) / 2;
+
+            if (arregloOrdenado[medio].Id == idBuscado)
+                return (arregloOrdenado[medio], comparaciones);
+
+            if (arregloOrdenado[medio].Id < idBuscado)
+                izquierda = medio + 1;
+            else
+                derecha = medio - 1;
+        }
+
+        return (null, comparaciones);
+    }
+}
+
+// ==============================================
+// MENÚ MAESTRO Y SISTEMA PRINCIPAL
+// ==============================================
+class Program
+{
+    static TablaDinamica dataCore = new TablaDinamica();
+    static RegistroDatos[]? indiceOrdenado = null;
 
     static void Main(string[] args)
     {
-        Console.WriteLine("===== PROYECTO FINAL - FASE 3: LISTA DINÁMICA EN HEAP =====\n");
+        Console.WriteLine("==================================================");
+        Console.WriteLine("          DATACORE v4.0 - PROYECTO FINAL          ");
+        Console.WriteLine("==================================================\n");
 
-        TablaDinamica dataCore = new TablaDinamica();
-
-        // 1. INSERTAR 15 REGISTROS
-        Console.WriteLine("--- INSERTANDO 15 REGISTROS ---");
-        for (int i = 1; i <= 15; i++)
+        bool activo = true;
+        do
         {
-            RegistroDatos reg = new RegistroDatos(i, i * 123456789L, i * 150);
-            dataCore.InsertarFinal(reg);
-            Console.WriteLine($"[OK] Registro {i} agregado");
+            MostrarMenu();
+            try
+            {
+                Console.Write("\nSelecciona una opción: ");
+                string entrada = Console.ReadLine() ?? "";
+                
+                if (!int.TryParse(entrada, out int opcion))
+                {
+                    Console.WriteLine(" Entrada inválida. Ingresa un número del 1 al 6.");
+                    continue;
+                }
+
+                switch (opcion)
+                {
+                    case 1: InsertarRegistro(); break;
+                    case 2: EliminarRegistro(); break;
+                    case 3: MostrarTodos(); break;
+                    case 4: ConstruirIndiceYOrdenar(); break;
+                    case 5: BuscarPorId(); break;
+                    case 6:
+                        Console.WriteLine(" Saliendo del sistema... ¡Proyecto completado!");
+                        activo = false;
+                        break;
+                    default:
+                        Console.WriteLine(" Opción no válida. Intenta nuevamente.");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($" Error en operación: {ex.Message}");
+            }
+
+            if (activo)
+            {
+                Console.WriteLine("Presiona cualquier tecla para volver al menú...");
+                Console.ReadKey();
+                Console.Clear();
+            }
+
+        } while (activo);
+    }
+
+    static void MostrarMenu()
+    {
+        Console.WriteLine("==================== MENÚ PRINCIPAL ====================");
+        Console.WriteLine("1. Insertar nuevo registro");
+        Console.WriteLine("2. Eliminar registro por ID");
+        Console.WriteLine("3. Mostrar todos los registros");
+        Console.WriteLine("4. Construir índice y ordenar (QuickSort)");
+        Console.WriteLine("5. Búsqueda binaria indexada");
+        Console.WriteLine("6. Salir del sistema");
+        Console.WriteLine("========================================================");
+    }
+
+    static void InsertarRegistro()
+    {
+        Console.WriteLine("\n--- NUEVO REGISTRO ---");
+        Console.Write("Ingresa ID numérico: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
+        {
+            Console.WriteLine(" ID inválido.");
+            return;
         }
 
-        // 2. ELIMINAR 2 REGISTROS
-        Console.WriteLine("\n--- ELIMINANDO Id 5 y Id 11 ---");
-        dataCore.EliminarPorId(5);
-        dataCore.EliminarPorId(11);
-        Console.WriteLine("Eliminación completada sin errores");
+        RegistroDatos nuevo = new RegistroDatos(
+            id: id,
+            hash: DateTime.Now.Ticks,
+            pesoBytes: new Random().Next(100, 5000)
+        );
 
-        // 3. CONVERTIR A ARREGLO Y ORDENAR
-        Console.WriteLine($"\n--- CONVIRTIENDO A ARREGLO ({dataCore.Cantidad} registros) ---");
-        RegistroDatos[] arreglo = dataCore.ObtenerComoArreglo();
+        dataCore.InsertarFinal(nuevo);
+        indiceOrdenado = null; // El índice queda obsoleto al agregar
+        Console.WriteLine($" Registro ID {id} agregado exitosamente.");
+    }
 
-        Console.WriteLine("--- ORDENANDO CON QUICKSORT ---");
-        QuickSort(arreglo, 0, arreglo.Length - 1);
+    static void EliminarRegistro()
+    {
+        Console.WriteLine("--- ELIMINAR REGISTRO ---");
+        Console.Write("Ingresa ID a eliminar: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
+        {
+            Console.WriteLine(" ID inválido.");
+            return;
+        }
 
-        // 4. MOSTRAR RESULTADO FINAL
-        Console.WriteLine("\n=== LISTA FINAL ORDENADA ===");
-        foreach (var r in arreglo)
-            Console.WriteLine(r);
+        if (dataCore.EliminarPorId(id))
+        {
+            indiceOrdenado = null; // El índice queda obsoleto al eliminar
+            Console.WriteLine($" Registro ID {id} eliminado correctamente.");
+        }
+        else
+        {
+            Console.WriteLine($" No se encontró el registro con ID {id}.");
+        }
+    }
 
-        Console.WriteLine(" Fase 3 completada: Lista dinámica interoperable con algoritmos anteriores");
-        Console.WriteLine("Presiona cualquier tecla para salir...");
-        Console.ReadKey();
+    static void MostrarTodos()
+    {
+        Console.WriteLine($"--- LISTA TOTAL ({dataCore.Cantidad} registros) ---");
+        RegistroDatos[] lista = dataCore.ObtenerComoArreglo();
+        
+        if (lista.Length == 0)
+        {
+            Console.WriteLine("📭 La lista está vacía.");
+            return;
+        }
+
+        foreach (var reg in lista)
+            Console.WriteLine(reg);
+    }
+
+    static void ConstruirIndiceYOrdenar()
+    {
+        Console.WriteLine("--- CONSTRUYENDO ÍNDICE Y ORDENANDO ---");
+        indiceOrdenado = dataCore.ObtenerComoArreglo();
+        
+        if (indiceOrdenado.Length == 0)
+        {
+            Console.WriteLine("📭 No hay registros para ordenar.");
+            return;
+        }
+
+        Ordenador.QuickSort(indiceOrdenado, 0, indiceOrdenado.Length - 1);
+        Console.WriteLine(" Índice construido y ordenado por ID (QuickSort O(n log n)).");
+        
+        Console.WriteLine("Registros ordenados:");
+        foreach (var reg in indiceOrdenado)
+            Console.WriteLine(reg);
+    }
+
+    static void BuscarPorId()
+    {
+        Console.WriteLine("--- BÚSQUEDA BINARIA INDEXADA ---");
+        
+        if (indiceOrdenado == null)
+        {
+            Console.WriteLine(" Primero debes construir el índice (Opción 4).");
+            return;
+        }
+
+        Console.Write("Ingresa ID a buscar: ");
+        if (!int.TryParse(Console.ReadLine(), out int idBuscar))
+        {
+            Console.WriteLine("ID inválido.");
+            return;
+        }
+
+        var (resultado, comparaciones) = Buscador.BuscarRegistroIndexado(indiceOrdenado, idBuscar);
+
+        if (resultado.HasValue)
+        {
+            Console.WriteLine($" ENCONTRADO en {comparaciones} comparaciones (O(log n)):");
+            Console.WriteLine(resultado.Value);
+        }
+        else
+        {
+            Console.WriteLine($" Registro no encontrado. Realizadas {comparaciones} comparaciones.");
+        }
     }
 }
