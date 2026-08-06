@@ -185,7 +185,7 @@ class Program
                     RegistroDatos nuevo = new RegistroDatos(id, DateTime.Now.Ticks, new Random().Next(100, 5000));
                     dataCore.InsertarFinal(nuevo);
                     indiceOrdenado = null;
-                    Console.WriteLine(" Registro agregado");
+                    Console.WriteLine("✅ Registro agregado");
                     break;
 
                 case "2":
@@ -194,9 +194,9 @@ class Program
                     if (dataCore.EliminarPorId(idElim))
                     {
                         indiceOrdenado = null;
-                        Console.WriteLine(" Eliminado");
+                        Console.WriteLine("✅ Eliminado");
                     }
-                    else Console.WriteLine(" No existe");
+                    else Console.WriteLine("❌ No existe");
                     break;
 
                 case "3":
@@ -206,39 +206,44 @@ class Program
 
                 case "4":
                     indiceOrdenado = dataCore.ObtenerComoArreglo();
+                    if (indiceOrdenado.Length == 0)
+                    {
+                        Console.WriteLine("📭 No hay registros");
+                        break;
+                    }
                     Ordenador.QuickSort(indiceOrdenado, 0, indiceOrdenado.Length - 1);
-                    Console.WriteLine(" Ordenado");
+                    Console.WriteLine("✅ Ordenado");
                     foreach (var r in indiceOrdenado) Console.WriteLine(r);
                     break;
 
                 case "5":
                     if (indiceOrdenado == null)
                     {
-                        Console.WriteLine(" Primero ordena (opción 4)");
+                        Console.WriteLine("⚠️ Primero ordena (opción 4)");
                         break;
                     }
                     Console.Write("ID a buscar: ");
                     int idBus = int.Parse(Console.ReadLine());
                     var res = Buscador.BuscarRegistroIndexado(indiceOrdenado, idBus);
                     if (res.resultado.HasValue)
-                        Console.WriteLine($" Encontrado en {res.comparaciones} pasos:\n{res.resultado.Value}");
+                        Console.WriteLine($"✅ Encontrado en {res.comparaciones} pasos:\n{res.resultado.Value}");
                     else
-                        Console.WriteLine($" No encontrado en {res.comparaciones} pasos");
+                        Console.WriteLine($"❌ No encontrado en {res.comparaciones} pasos");
                     break;
 
                 case "6":
-                    Console.WriteLine("Fin del programa");
+                    Console.WriteLine("👋 Fin del programa");
                     activo = false;
                     break;
 
                 default:
-                    Console.WriteLine(" Opción inválida");
+                    Console.WriteLine("⚠️ Opción inválida");
                     break;
             }
 
             if (activo)
             {
-                Console.WriteLine("\nEnter para continuar...");
+                Console.WriteLine("\nPresiona una tecla para continuar...");
                 Console.ReadKey();
                 Console.Clear();
             }
